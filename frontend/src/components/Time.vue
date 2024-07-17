@@ -17,12 +17,16 @@ export default {
     saveTime,
     deleteTime,
   },
-  created: async function () {
+  created() {
     this.startInterval()
-    const res = await fetch('http://192.168.0.104:5555/times')
-    const json = await res.json()
-    if (json.length) this.savedTimes = json
-  },
+    this.axios.get('/times')
+      .then(response => {
+        if (response.data.length) this.savedTimes = response.data
+      })
+      .catch(error => {
+        console.error(error);
+      })
+  }
 }
 </script>
 

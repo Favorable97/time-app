@@ -1,47 +1,40 @@
 import pool from './mysqlPool.mjs'
 
-const readRecords = () =>
-  new Promise((resolve, reject) =>
-    pool.getConnection((err, connection) => {
-      if (err) return reject(err)
-      connection.query(
-        'SELECT * FROM `times` ORDER BY created_at DESC',
-        (err, results) => {
-          if (err) return reject(err)
-          resolve(results)
-        }
-      )
-      connection.release()
-    })
-  )
+const readRecords = async () => {
+  try {
+    const connection = await pool.getConnection();
+    const result = await connection.query('SELECT * FROM `times` ORDER BY created_at DESC');
+    connection.release();
+    return result[0];
+  } catch (error) {
+    console.error('Error!', error);
+    throw error;
+  }
+};
 
-const insertRecord = (time) =>
-  new Promise((resolve, reject) =>
-    pool.getConnection((err, connection) => {
-      if (err) return reject(err)
-      connection.query(
-        `INSERT INTO times (time) VALUES ('${time}')`,
-        (err, result) => {
-          if (err) return reject(err)
-          console.log(`New time ${time} was saved to the DB`)
-          resolve(result)
-        }
-      )
-      connection.release()
-    })
-  )
+const insertRecord = async(time) => {
+  try {
+    const connection = await pool.getConnection()
+    const result = await connection.query(`INSERT INTO times (time) VALUES ('${time}')`)
+    console.log(`New time ${time} was saved to the DB`)
+    connection.release()
+    return result[0]
+  } catch (error) {
+    console.error('Error!', error)
+    return error
+  }
+}
 
-const deleteRecord = (id) =>
-  new Promise((resolve, reject) =>
-    pool.getConnection((err, connection) => {
-      if (err) return reject(err)
-      connection.query(`DELETE FROM times WHERE id=${id}`, (err, result) => {
-        if (err) return reject(err)
-        console.log(`Time with id ${id} was deleted from the DB`)
-        resolve(result)
-      })
-      connection.release()
-    })
-  )
-
+const deleteRecord = async(id) => {
+  try {
+    const connection = await pool.getConnection()
+    const result = await connection.query(`DELETE FROM times WHERE id=${id}`)
+    console.log(`Time with id ${id} was deleted from the DB`)
+    connection.release()
+    return result[0]
+  } catch (error) {
+    console.error('Error!', error)
+    return error
+  }
+}
 export { readRecords, insertRecord, deleteRecord }

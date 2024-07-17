@@ -6,33 +6,33 @@ function startInterval() {
   }, 1000)
 }
 
-async function saveTime() {
+function saveTime() {
   const time = this.currentTime
-  const res = await fetch('http://192.168.0.104:5555/times', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ time }),
-  })
-  const json = await res.json()
-  if (json.insertId) {
-    this.savedTimes.unshift({ id: json.insertId, time })
-    this.$toast.success(`Время ${time} сохранено`, { position: 'top-right' })
-  }
+  this.axios.post('/times', {
+      time: time
+    })
+    .then(response => {
+      if (response.data.insertId) {
+        this.savedTimes.unshift({ id: response.data.insertId, time })
+        this.$toast.success(`Время ${time} сохранено`, { position: 'top-right' })
+      }
+    })
+    .catch(error => {
+      console.log(error)
+    })
 }
 
-async function deleteTime(id) {
-  const res = await fetch(`http://192.168.0.104:5555/time/${id}`, {
-    method: 'DELETE',
-  })
-  const json = await res.json()
-  if (json.affectedRows) {
-    this.savedTimes = this.savedTimes.filter((savedTime) => savedTime.id !== id)
-    this.$toast.error(`Время с ID ${id} удалено`, {
-      position: 'top-right',
+function deleteTime(id) {
+  this.axios.delete(`/time/${id}`)
+    .then(response => {
+      if (response.data.affectedRows) {
+        this.savedTimes = this.savedTimes.filter((savedTime) => savedTime.id !== id)
+        this.$toast.error(`Время с ID ${id} удалено`, {
+          position: 'top-right',
+        })
+      }
     })
-  }
+    .catch(error => console.error(error))
 }
 
 export { startInterval, saveTime, deleteTime }
